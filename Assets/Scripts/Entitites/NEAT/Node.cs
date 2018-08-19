@@ -42,7 +42,7 @@
 
         public void Mutate()
         {
-            Innovation++;
+            
         }
 
         public uint Id

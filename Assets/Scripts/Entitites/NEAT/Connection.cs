@@ -30,7 +30,12 @@
 
         public void Mutate()
         {
-            Innovation++;
+            
+        }
+
+        public uint Id
+        {
+            get { return Innovation; }
         }
     }
 }

@@ -14,17 +14,21 @@ namespace NeatFish.Entities.NEAT
         public List<Node> Neurons { get; protected set; }
         public List<Connection> Connections { get; protected set; }
 
+        protected NodeIDGenerator generator;
+
         public NeuralNet(int inputs, int outputs, bool bias, NodeIDGenerator nodeIDGenerator)
         {
             Inputs = inputs;
             Outputs = outputs;
             Innovation = 0;
 
+            generator = nodeIDGenerator;
+
             Neurons = new List<Node>();
             Connections = new List<Connection>();
 
             for (int i = 0; i < inputs; i++) {
-                var node = new Node(nodeIDGenerator.Next, Node.NodeTypes.Input) {
+                var node = new Node(generator.Next, Node.NodeTypes.Input) {
                     Position = new Vector2(0, i)
                 };
 
@@ -41,7 +45,7 @@ namespace NeatFish.Entities.NEAT
             }
 
             for (int i = 0; i < outputs; i++) {
-                var node = new Node(nodeIDGenerator.Next, Node.NodeTypes.Output) {
+                var node = new Node(generator.Next, Node.NodeTypes.Output) {
                     Position = new Vector2(-1, i)
                 };
 
@@ -82,6 +86,11 @@ namespace NeatFish.Entities.NEAT
             return output;
         }
 
+        public uint Id
+        {
+            get { return Innovation; }
+        }
+
         public void Mutate()
         {
             float rate = SimulationManager.mutationRate;
@@ -118,7 +127,7 @@ namespace NeatFish.Entities.NEAT
 
         protected Node CreateNewNeuron()
         {
-            var n = new Node(Node.NodeTypes.Hidden);
+            var n = new Node(generator.Next, Node.NodeTypes.Hidden);
 
             Neurons.Add(n);
 

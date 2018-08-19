@@ -63,6 +63,8 @@ public class SimulationManager : MonoBehaviour {
 
         var fishSoul = newFish.GetComponent<EntityManager>();
 
+        fishSoul.assignBrain(nodeIDGenerator);
+
         if ( null != parent ) {
             fishSoul.InheritFrom(parent);
         }
