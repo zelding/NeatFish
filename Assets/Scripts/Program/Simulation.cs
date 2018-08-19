@@ -19,8 +19,8 @@ public class Simulation : MonoBehaviour {
     public Vector3 SpawnBoundaryCenter { get { return spawnBoundaryCenter; } }
     public float SpawnBoundaryRaduis { get { return spawnBoundaryRaduis; } }
 
-    protected readonly Vector3 spawnBoundaryCenter;
-    protected readonly float spawnBoundaryRaduis;
+    protected Vector3 spawnBoundaryCenter;
+    protected float spawnBoundaryRaduis;
 
     protected List<EntityManager> fishes;
 
@@ -41,9 +41,13 @@ public class Simulation : MonoBehaviour {
         manager         = new SimulationManager(InitialPopulation, nodeIDGenerator);
         fishes          = new List<EntityManager>();
 
+        spawnBoundaryCenter = new Vector3(0, 0, 0);
+        spawnBoundaryRaduis = 67f;
+
         for (int i = 0; i < InitialPopulation; i++) {
             var fish = CreateNewFish();
 
+            fishes.Add(fish);
             manager.AddBrain(fish.Brain);
         }
 
@@ -70,7 +74,7 @@ public class Simulation : MonoBehaviour {
                 Random.Range(-spawnBoundaryRaduis, spawnBoundaryRaduis), 
                 Random.Range(-spawnBoundaryRaduis, spawnBoundaryRaduis), 
                 Random.Range(-spawnBoundaryRaduis, spawnBoundaryRaduis)
-            );
+            ) + spawnBoundaryCenter;
 
         } while (IsCloseToOthers(startPosition));
 
