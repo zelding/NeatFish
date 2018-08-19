@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using NeaftFish.Entities;
+using NeatFish.Simulation.Utilities;
 
 public class SimulationManager : MonoBehaviour {
 
@@ -16,6 +18,8 @@ public class SimulationManager : MonoBehaviour {
     private readonly float spawnBoundary = 50f;
     private bool IsRunning = false;
 
+    private NodeIDGenerator nodeIDGenerator;
+
     private void Awake()
     {
         if ( null == FisheContainer ) {
@@ -23,6 +27,7 @@ public class SimulationManager : MonoBehaviour {
         }
 
         Fishes = new List<EntityManager>();
+        nodeIDGenerator = new NodeIDGenerator();
     }
 
     // Use this for initialization

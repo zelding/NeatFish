@@ -1,8 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿namespace NeatFish.Entities.NEAT
+{
+    public interface IMutatable
+    {
+        uint Id { get; }
 
-public interface IMutatable {
-
-    void Mutate();
+        void Mutate();
+    }
 }
