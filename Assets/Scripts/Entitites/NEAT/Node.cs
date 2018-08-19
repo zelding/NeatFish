@@ -47,7 +47,7 @@
 
         public uint Id
         {
-            get { return Innovation }
+            get { return Innovation; }
         }
     }
 }
