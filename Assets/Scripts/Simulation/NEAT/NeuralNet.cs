@@ -2,7 +2,7 @@
 using UnityEngine;
 using NeatFish.Simulation.Utilities;
 
-namespace NeatFish.Entities.NEAT
+namespace NeatFish.Simulation.NEAT
 {
     public class NeuralNet : IMutatable
     {
@@ -93,7 +93,7 @@ namespace NeatFish.Entities.NEAT
 
         public void Mutate()
         {
-            float rate = SimulationManager.mutationRate;
+            float rate = global::Simulation.mutationRate;
 
             foreach (Connection c in Connections) {
                 var r = Random.Range(0f, 1f);

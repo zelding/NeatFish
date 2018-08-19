@@ -1,4 +1,4 @@
-﻿namespace NeatFish.Entities.NEAT
+﻿namespace NeatFish.Simulation.NEAT
 { 
     public class Connection : IMutatable
     {

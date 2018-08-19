@@ -1,14 +1,16 @@
 ﻿using UnityEngine;
-using NeatFish.Entities.NEAT;
+using NeatFish.Simulation.NEAT;
 using NeatFish.Simulation.Utilities;
 
-namespace NeaftFish.Entities
+namespace NeatFish.Entities
 {
     public class EntityManager : MonoBehaviour
     {
-        protected NeuralNet Brain;
+        protected NeuralNet brain;
 
         protected Movement Legs;
+
+        public NeuralNet Brain { get { return brain; } }
 
         public bool Alive { get; protected set; }
 
@@ -19,14 +21,9 @@ namespace NeaftFish.Entities
             Movement Legs = new Movement(GetComponent<Rigidbody>(), transform);
         }
 
-        public void assignBrain(NodeIDGenerator nodeIDGenerator)
+        public void assignBrain(NeuralNet brain)
         {
-            Brain = new NeuralNet(5, 3, true, nodeIDGenerator);
-        }
-
-        public void InheritFrom(EntityManager parent)
-        {
-            Brain = new NeuralNet(parent.Brain);
+            this.brain = brain;
         }
 
         // Use this for initialization
