@@ -11,7 +11,7 @@ namespace NeatFish.Program
 
         public NodeIDGenerator NodeIDGenerator { get { return nodeIDGenerator; } }
 
-        private NodeIDGenerator nodeIDGenerator;
+        private readonly NodeIDGenerator nodeIDGenerator;
 
         public bool IsRunning = false;
 
@@ -19,6 +19,22 @@ namespace NeatFish.Program
         {
             Brains = new List<NeuralNet>();
             this.nodeIDGenerator = nodeIDGenerator;
+        }
+
+        public NeuralNet CreateNewBrain(NeuralNet parent = null)
+        {
+            NeuralNet brain;
+
+            if (null != parent) {
+                brain = new NeuralNet(parent);
+            }
+            else {
+                brain = new NeuralNet(10, 10, true, nodeIDGenerator);
+            }
+
+            Brains.Add(brain);
+
+            return brain;
         }
 
         public void AddBrain(NeuralNet brain)

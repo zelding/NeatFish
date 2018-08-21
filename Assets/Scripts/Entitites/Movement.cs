@@ -5,7 +5,6 @@ namespace NeatFish.Entities
 
     public class Movement
     {
-
         protected Rigidbody Body;
 
         protected Transform Transform;
@@ -26,7 +25,14 @@ namespace NeatFish.Entities
             Distance = 0f;
         }
 
-        public void Update()
+        public void Move(Vector3 velocity)
+        {
+            Body.AddForce(velocity, ForceMode.Force);
+
+            Update();
+        }
+
+        private void Update()
         {
             float difference = Vector3.Distance(LastPosition, Transform.position);
 
@@ -35,11 +41,6 @@ namespace NeatFish.Entities
             Distance += difference;
 
             LastPosition = Transform.position;
-        }
-
-        public void Move(Vector3 velocity)
-        {
-            Body.AddForce(velocity, ForceMode.Force);
         }
     }
 }

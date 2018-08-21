@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using NeatFish.Simulation.NEAT;
-using NeatFish.Simulation.Utilities;
 
 namespace NeatFish.Entities
 {
@@ -18,10 +17,12 @@ namespace NeatFish.Entities
 
         public void Awake()
         {
-            Movement Legs = new Movement(GetComponent<Rigidbody>(), transform);
+            var rb = GetComponent<Rigidbody>();
+
+            Legs = new Movement(rb, transform);
         }
 
-        public void assignBrain(NeuralNet brain)
+        public void AssignBrain(NeuralNet brain)
         {
             this.brain = brain;
         }
@@ -29,13 +30,18 @@ namespace NeatFish.Entities
         // Use this for initialization
         private void Start()
         {
-
+            
         }
 
         // Update is called once per frame
         private void FixedUpdate()
         {
-
+            if (Legs != null && brain != null) {
+                Legs.Move(Random.insideUnitSphere);
+            }
+            else {
+                Debug.Log("Nolegs");
+            }
         }
     }
 }

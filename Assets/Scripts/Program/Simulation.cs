@@ -22,7 +22,7 @@ public class Simulation : MonoBehaviour {
     protected Vector3 spawnBoundaryCenter;
     protected float spawnBoundaryRaduis;
 
-    protected List<EntityManager> fishes;
+    protected List<EntityManager> fishManagers;
 
     private NodeIDGenerator nodeIDGenerator;
     private SimulationManager manager;
@@ -39,7 +39,7 @@ public class Simulation : MonoBehaviour {
     private void Start () {
         nodeIDGenerator = new NodeIDGenerator();
         manager         = new SimulationManager(InitialPopulation, nodeIDGenerator);
-        fishes          = new List<EntityManager>();
+        fishManagers    = new List<EntityManager>();
 
         spawnBoundaryCenter = new Vector3(0, 0, 0);
         spawnBoundaryRaduis = 67f;
@@ -47,7 +47,7 @@ public class Simulation : MonoBehaviour {
         for (int i = 0; i < InitialPopulation; i++) {
             var fish = CreateNewFish();
 
-            fishes.Add(fish);
+            fishManagers.Add(fish);
             manager.AddBrain(fish.Brain);
         }
 
@@ -80,27 +80,20 @@ public class Simulation : MonoBehaviour {
 
         GameObject newFish = Instantiate(FishPrototype, startPosition, Quaternion.identity, FisheContainer.transform);
 
-        EntityManager fishSoul = newFish.AddComponent<EntityManager>();
+        EntityManager fishManager = newFish.GetComponent<EntityManager>();
 
-        NeuralNet brain = null;
+        NeuralNet brain = manager.CreateNewBrain(parent != null ? parent.Brain : null);
 
-        if (null != parent) {
-            brain = new NeuralNet(parent.Brain);
-        }
-        else {
-            brain = new NeuralNet(10, 10, true, nodeIDGenerator);
-        }
+        fishManager.AssignBrain(brain);
 
-        fishSoul.assignBrain(brain);
-
-        return fishSoul;
+        return fishManager;
     }
 
     private bool IsCloseToOthers(Vector3 pos)
     {
-        if (fishes.Count == 0) return false;
+        if (fishManagers.Count == 0) return false;
 
-        foreach (EntityManager entity in fishes) {
+        foreach (EntityManager entity in fishManagers) {
             float min_x = entity.transform.position.x;
             float max_x = entity.transform.position.x + entity.transform.localScale.x;
             float min_z = entity.transform.position.z;
