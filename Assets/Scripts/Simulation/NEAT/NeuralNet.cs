@@ -6,8 +6,8 @@ namespace NeatFish.Simulation.NEAT
 {
     public class NeuralNet : IMutatable
     {
-        public int Inputs { get; protected set; }
-        public int Outputs { get; protected set; }
+        public uint Inputs { get; protected set; }
+        public uint Outputs { get; protected set; }
 
         public uint Innovation { get; protected set; }
 
@@ -16,7 +16,7 @@ namespace NeatFish.Simulation.NEAT
 
         protected NodeIDGenerator generator;
 
-        public NeuralNet(int inputs, int outputs, bool bias, NodeIDGenerator nodeIDGenerator)
+        public NeuralNet(uint inputs, uint outputs, bool bias, NodeIDGenerator nodeIDGenerator)
         {
             Inputs = inputs;
             Outputs = outputs;
@@ -104,8 +104,8 @@ namespace NeatFish.Simulation.NEAT
 
         protected void InitializeConnections()
         {
-            for (int i = 0; i < Inputs; i++) {
-                for (int o = Inputs; i < Inputs + Outputs; o++) {
+            for (uint i = 0; i < Inputs; i++) {
+                for (uint o = Inputs; i < Inputs + Outputs; o++) {
                     var c = new Connection(Neurons[i], Neurons[o], Random.Range(-1f, 1f), Random.Range(-0.5f, 0.5f));
 
                     Connections.Add(c);
