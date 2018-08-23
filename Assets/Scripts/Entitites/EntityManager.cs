@@ -40,7 +40,7 @@ namespace NeatFish.Entities
                 Legs.Move(Random.insideUnitSphere);
             }
             else {
-                Debug.Log("Nolegs");
+                //Debug.Log("Nolegs");
             }
         }
     }

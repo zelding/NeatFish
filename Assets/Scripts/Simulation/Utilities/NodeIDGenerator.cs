@@ -2,11 +2,11 @@
 {
     public class NodeIDGenerator
     {
-        private uint _next = 0;
+        private uint _next = 1;
 
         public NodeIDGenerator()
         {
-            _next = 0;
+            _next = 1;
         }
 
         public NodeIDGenerator(uint start)
@@ -27,7 +27,7 @@
 
         public void Reset()
         {
-            _next = 0;
+            _next = 1;
         }
 
         public void Reset(uint start)

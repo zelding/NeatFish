@@ -28,7 +28,6 @@ namespace NeatFish.Simulation.NEAT
             Innovation    = id;
             Value         = 0;
             PreviousValue = Value;
-            Innovation    = 0;
 
             this.type = type;
         }
