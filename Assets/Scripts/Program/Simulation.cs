@@ -8,7 +8,7 @@ using NeatFish.Program;
 
 public class Simulation : MonoBehaviour {
 
-    public readonly static float mutationRate = 0.02f;
+    public readonly static float mutationRate = 0.92f;
 
     public GameObject FisheContainer;
     public GameObject FishPrototype;

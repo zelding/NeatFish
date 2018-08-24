@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using NeatFish.Simulation.Utilities;
-using System.Linq;
 
 namespace NeatFish.Simulation.NEAT
 {
@@ -12,6 +11,9 @@ namespace NeatFish.Simulation.NEAT
 
         public uint Innovation { get; protected set; }
 
+        public Node[] InputNeurons { get; protected set; }
+        public Node[] OutputNeurons { get; protected set; }
+
         public List<Node> Neurons { get; protected set; }
         public List<Connection> Connections { get; protected set; }
 
@@ -19,38 +21,41 @@ namespace NeatFish.Simulation.NEAT
 
         public NeuralNet(uint inputs, uint outputs, bool bias, NodeIDGenerator nodeIDGenerator)
         {
-            Inputs = inputs;
-            Outputs = outputs;
+            Inputs     = inputs;
+            Outputs    = outputs;
             Innovation = 0;
 
             generator = nodeIDGenerator;
+
+            InputNeurons  = new Node[inputs + (bias ? 1 : 0) ];
+            OutputNeurons = new Node[outputs];
 
             Neurons     = new List<Node>();
             Connections = new List<Connection>();
 
             if (bias) {
                 var node = new Node(0, Node.NodeTypes.Bias) {
-                    Position = new Vector2(-1, 0)
+                    Position = new Vector2(0, 0),
                 };
 
-                Neurons.Add(node);
+                InputNeurons[0] = node;
                 Inputs++;
             }
 
             for (int i = 1; i < Inputs; i++) {
                 var node = new Node(generator.Next, Node.NodeTypes.Input) {
-                    Position = new Vector2(-1, i)
+                    Position = new Vector2(0, i),
                 };
 
-                Neurons.Add( node);
+                InputNeurons[i] = node;
             }
 
             for (int i = 0; i < Outputs; i++) {
                 var node = new Node(generator.Next, Node.NodeTypes.Output) {
-                    Position = new Vector2(int.MaxValue, i)
+                    Position = new Vector2(int.MaxValue, i),
                 };
 
-                Neurons.Add(node);
+                OutputNeurons[i] = node;
             }
 
             InitializeConnections();
@@ -60,12 +65,23 @@ namespace NeatFish.Simulation.NEAT
 
         public NeuralNet(NeuralNet parent)
         {
-            Inputs = parent.Inputs;
-            Outputs = parent.Outputs;
+            Inputs     = parent.Inputs;
+            Outputs    = parent.Outputs;
             Innovation = parent.Innovation;
 
-            Neurons = new List<Node>();
+            InputNeurons  = new Node[Inputs];
+            OutputNeurons = new Node[Outputs];
+
+            Neurons     = new List<Node>();
             Connections = new List<Connection>();
+
+            for (int i = 0; i < parent.InputNeurons.Length; i++) {
+                InputNeurons[i] = new Node(parent.InputNeurons[i]);
+            }
+
+            for (int i = 0; i < parent.OutputNeurons.Length; i++) {
+                OutputNeurons[i] = new Node(parent.OutputNeurons[i]);
+            }
 
             foreach (Node x in parent.Neurons) {
                 var nn = new Node(x);
@@ -74,6 +90,7 @@ namespace NeatFish.Simulation.NEAT
             }
 
             InitializeConnections();
+            Mutate();
         }
 
         public double[] FeedForward(double[] inputValues)
@@ -97,16 +114,22 @@ namespace NeatFish.Simulation.NEAT
 
                 if (r <= rate) {
                     c.Mutate();
+
+                    Innovation++;
                 }
             }
 
-            Innovation++;
+            var rn = Random.Range(0f, 1f);
+
+            if (rn <= rate) {
+
+            }
         }
 
         protected void InitializeConnections()
         {
             for (int i = 0; i < Inputs; i++) {
-                for (int o = (int)Inputs; o <Inputs + Outputs; o++) {
+                for (int o = (int)Inputs; o < Neurons.Count; o++) {
                     var c = new Connection(Neurons[i], Neurons[o], Random.Range(-1f, 1f), Random.Range(-0.5f, 0.5f));
 
                     Connections.Add(c);
@@ -114,9 +137,21 @@ namespace NeatFish.Simulation.NEAT
             }
         }
 
-        protected Node CreateNewNeuron()
+        protected Node[] GetTwoNodes()
         {
-            var n = new Node(generator.Next, Node.NodeTypes.Hidden);
+            var rtnv = new Node[2];
+
+            Node input  = Neurons[Random.Range(0, Neurons.Count - (int)Outputs)];
+            Node output = Neurons[Random.Range((int)Inputs, Neurons.Count)];
+
+            return rtnv;
+        }
+
+        protected Node CreateNewNeuron(Node old)
+        {
+            var n = new Node(generator.Next, Node.NodeTypes.Hidden) {
+                Position = new Vector2(old.Position.x + 1, old.Position.y)
+            };
 
             Neurons.Add(n);
 
