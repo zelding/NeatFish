@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using NeatFish.Simulation.Utilities;
+using Redzen.Sorting;
+using Redzen.Random;
 
 namespace NeatFish.Simulation.NEAT
 {
@@ -14,10 +16,13 @@ namespace NeatFish.Simulation.NEAT
         public Node[] InputNeurons { get; protected set; }
         public Node[] OutputNeurons { get; protected set; }
 
+        public Dictionary<uint, Vector2> NodeMatrix;
+
         public List<Node> Neurons { get; protected set; }
         public List<Connection> Connections { get; protected set; }
 
         protected NodeIDGenerator generator;
+        protected readonly IRandomSource _rng = RandomDefaults.CreateRandomSource();
 
         public NeuralNet(uint inputs, uint outputs, bool bias, NodeIDGenerator nodeIDGenerator)
         {
@@ -30,6 +35,7 @@ namespace NeatFish.Simulation.NEAT
             InputNeurons  = new Node[inputs + (bias ? 1 : 0) ];
             OutputNeurons = new Node[outputs];
 
+            NodeMatrix  = new Dictionary<uint, Vector2>();
             Neurons     = new List<Node>();
             Connections = new List<Connection>();
 
@@ -39,6 +45,7 @@ namespace NeatFish.Simulation.NEAT
                 };
 
                 InputNeurons[0] = node;
+                NodeMatrix.Add(node.Id, node.Position);
                 Inputs++;
             }
 
@@ -48,6 +55,7 @@ namespace NeatFish.Simulation.NEAT
                 };
 
                 InputNeurons[i] = node;
+                NodeMatrix.Add(node.Id, node.Position);
             }
 
             for (int i = 0; i < Outputs; i++) {
@@ -56,6 +64,7 @@ namespace NeatFish.Simulation.NEAT
                 };
 
                 OutputNeurons[i] = node;
+                NodeMatrix.Add(node.Id, node.Position);
             }
 
             InitializeConnections();
@@ -72,21 +81,30 @@ namespace NeatFish.Simulation.NEAT
             InputNeurons  = new Node[Inputs];
             OutputNeurons = new Node[Outputs];
 
+            NodeMatrix = new Dictionary<uint, Vector2>();
+
             Neurons     = new List<Node>();
             Connections = new List<Connection>();
 
             for (int i = 0; i < parent.InputNeurons.Length; i++) {
-                InputNeurons[i] = new Node(parent.InputNeurons[i]);
+                var node = new Node(parent.InputNeurons[i]);
+
+                InputNeurons[i] = node;
+                NodeMatrix.Add(node.Id, node.Position);
             }
 
             for (int i = 0; i < parent.OutputNeurons.Length; i++) {
-                OutputNeurons[i] = new Node(parent.OutputNeurons[i]);
+                var node = new Node(parent.OutputNeurons[i]);
+
+                OutputNeurons[i] = node;
+                NodeMatrix.Add(node.Id, node.Position);
             }
 
             foreach (Node x in parent.Neurons) {
                 var nn = new Node(x);
 
                 Neurons.Add(nn);
+                NodeMatrix.Add(nn.Id, nn.Position);
             }
 
             InitializeConnections();
@@ -110,7 +128,7 @@ namespace NeatFish.Simulation.NEAT
             float rate = global::Simulation.mutationRate;
 
             foreach (Connection c in Connections) {
-                var r = Random.Range(0f, 1f);
+                var r = _rng.NextDouble();
 
                 if (r <= rate) {
                     c.Mutate();
@@ -119,22 +137,32 @@ namespace NeatFish.Simulation.NEAT
                 }
             }
 
-            var rn = Random.Range(0f, 1f);
+            var rn = _rng.NextDouble();
 
             if (rn <= rate) {
+                // enable a connection
 
+                Innovation++;
+            } else if ( rn <= rate*2 ) {
+                // add node
+
+                Innovation++;
             }
         }
 
         protected void InitializeConnections()
         {
-            for (int i = 0; i < Inputs; i++) {
-                for (int o = (int)Inputs; o < Neurons.Count; o++) {
-                    var c = new Connection(Neurons[i], Neurons[o], Random.Range(-1f, 1f), Random.Range(-0.5f, 0.5f));
+            ConnectionTemplate[] conTmpl = new ConnectionTemplate[ Inputs * Outputs ];
 
-                    Connections.Add(c);
+            for (int i = 0, c = 0; i < Inputs; i++) {
+                for (int o = 0; o < Outputs; o++) {
+                    conTmpl[c++] = new ConnectionTemplate(generator.Next, i, o);
                 }
             }
+ 
+            SortUtils.Shuffle(conTmpl, _rng);
+
+
         }
 
         protected Node[] GetTwoNodes()
@@ -158,5 +186,18 @@ namespace NeatFish.Simulation.NEAT
             return n;
         }
 
+        private struct ConnectionTemplate
+        {
+            public readonly uint innovationId;
+            public readonly int inputIndex;
+            public readonly int outputIndex;
+
+            public ConnectionTemplate(uint iid, int input, int output)
+            {
+                innovationId = iid;
+                inputIndex   = input;
+                outputIndex  = output;
+            }
+        }
     }
 }
