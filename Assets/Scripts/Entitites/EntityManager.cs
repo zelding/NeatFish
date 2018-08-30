@@ -37,7 +37,9 @@ namespace NeatFish.Entities
         private void FixedUpdate()
         {
             if (Legs != null && brain != null) {
-                Legs.Move(Random.insideUnitSphere);
+                double[] output = brain.Activate(new double[] { 1, 2 });
+
+                Legs.Move(new Vector3((float)output[0], (float)output[1], (float)output[3]));
             }
             else {
                 //Debug.Log("Nolegs");

@@ -9,16 +9,14 @@ namespace NeatFish.Program
     {
         private List<NeuralNet> Brains;
 
-        public NodeIDGenerator NodeIDGenerator { get { return nodeIDGenerator; } }
-
-        private readonly NodeIDGenerator nodeIDGenerator;
+        public NodeIDGenerator NodeIDGenerator { get; }
 
         public bool IsRunning = false;
 
         public SimulationManager(uint population, NodeIDGenerator nodeIDGenerator)
         {
             Brains = new List<NeuralNet>();
-            this.nodeIDGenerator = nodeIDGenerator;
+            NodeIDGenerator = nodeIDGenerator;
         }
 
         public NeuralNet CreateNewBrain(NeuralNet parent = null)
@@ -29,8 +27,10 @@ namespace NeatFish.Program
                 brain = new NeuralNet(parent);
             }
             else {
-                brain = new NeuralNet(10, 10, true, nodeIDGenerator);
+                brain = new NeuralNet(2, 3, NodeIDGenerator);
             }
+
+            brain.GenerateNetwork();
 
             Brains.Add(brain);
 

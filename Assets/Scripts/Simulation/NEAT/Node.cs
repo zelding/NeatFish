@@ -1,74 +1,110 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace NeatFish.Simulation.NEAT
 {
-    public class Node : IMutatable
+    public class Node
     {
         public enum NodeTypes { Input, Hidden, Output, Bias };
 
         public readonly NodeTypes type;
 
-        public double Value { get; protected set; }
+        public UnityEngine.Vector2 Position;
 
-        public double PreviousValue { get; protected set; }
+        protected double Value;
 
-        public uint Innovation { get; protected set; }
+        protected double PreviousValue;
 
-        public UnityEngine.Vector2 Position { get; set; }
+        protected uint Identifier;
 
-        protected HashSet<uint> Inputs;
-        protected HashSet<uint> Outputs;
+        protected HashSet<Connection> Outputs;
 
         public Node(uint id, NodeTypes type)
         {
-            Inputs  = new HashSet<uint>();
-            Outputs = new HashSet<uint>();
-
-            Innovation    = id;
-            Value         = 0;
-            PreviousValue = Value;
+            Outputs = new HashSet<Connection>();
+            Identifier = id;
 
             this.type = type;
         }
 
         public Node(Node n)
         {
-            Inputs   = new HashSet<uint>(); // Dunno wich
             Outputs  = n.Outputs;
-
-            Value = 0;
-            PreviousValue = 0;
-            Innovation = n.Innovation;
+            Identifier = n.Identifier;
             Position = n.Position;
 
             type = n.type;
         }
 
-        public void SetValue(double v)
+        public void RegisterConnection(Connection c)
         {
-            PreviousValue = Value;
-            Value         = v;
+            if ( !Outputs.Contains(c) ) {
+                Outputs.Add(c);
+            }
         }
 
-        public void AddInputRef(uint reference)
+        public void AddValue(double value)
         {
-            Inputs.Add(reference);
+            Value += value;
         }
 
-        public void AddOutputRef(uint reference)
+        public void Fire()
         {
-            Outputs.Add(reference);
+            // first layer is inputs; they dont get modified
+            if (Position.x != 0) {
+                Value = Sigmoid(Value);
+            }
+
+            foreach (Connection c in Outputs) {
+                if (c.Enabled) {
+                    c.Output.AddValue(Value * c.Weight + c.Bias);
+                }
+            }
         }
 
-        public void Mutate()
+        public double GetValue()
         {
-            return;
+            return Value;
         }
 
         public uint Id
         {
-            get { return Innovation; }
+            get { return Identifier; }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Sigmoid(double x)
+        {
+            return (2f / (1f + System.Math.Exp(-4.9f * x))) - 1f;
+        }
+
+        public bool IsConnectedWith(Node n)
+        {
+            if ( n.type == NodeTypes.Input ) {
+                return false;
+            }
+
+            if ( Position.x == n.Position.x ) {
+                return false;
+            }
+
+            if (Position.x < n.Position.x) {
+                foreach (Connection c in n.Outputs) {
+                    if (c.Output == this) {
+                        return true;
+                    }
+                }
+            }
+            else {
+                foreach (Connection c in Outputs) {
+                    if (c.Output == n) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

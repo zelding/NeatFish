@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace NeatFish.Simulation.NEAT
 { 
@@ -9,15 +8,15 @@ namespace NeatFish.Simulation.NEAT
 
         public Node Output { get; protected set; }
 
-        public float Weight { get; protected set; }
+        public double Weight { get; protected set; }
 
-        public float Bias { get; protected set; }
+        public double Bias { get; protected set; }
 
         public bool Enabled { get; set; }
 
         public uint Innovation { get; protected set; }
 
-        public Connection(Node input, Node output, float weight, float bias)
+        public Connection(uint innovation, Node input, Node output, double weight, double bias)
         {
             if (input.type == Node.NodeTypes.Output || output.type == Node.NodeTypes.Input || output.type == Node.NodeTypes.Bias) {
                 throw new System.InvalidOperationException("Input/output node type invalid");
@@ -28,15 +27,11 @@ namespace NeatFish.Simulation.NEAT
             Weight = weight;
             Bias   = bias;
 
-            Input.AddOutputRef(Output.Id);
-            Output.AddInputRef(Input.Id);
+            Innovation = innovation;
 
-            Innovation = 0;
-        }
+            Enabled = false;
 
-        public void Fire()
-        {
-            Output.SetValue( Input.Value * Weight + Bias );
+            Input.RegisterConnection(this);
         }
 
         public void Mutate()
@@ -62,8 +57,6 @@ namespace NeatFish.Simulation.NEAT
                 Bias += Random.Range(-1f, 1f);
             }
 
-            Innovation++;
-
             Enabled = true;
         }
 
@@ -72,15 +65,5 @@ namespace NeatFish.Simulation.NEAT
             get { return Innovation; }
         }
 
-        public static Connection FindBetween(Node i, Node o, List<Connection> list)
-        {
-            foreach(Connection c in list) {
-                if ( c.Input.Id == i.Id && o.Id == c.Output.Id ) {
-                    return c;
-                }
-            }
-
-            return null;
-        }
     }
 }
