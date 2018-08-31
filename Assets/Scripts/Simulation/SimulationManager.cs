@@ -30,8 +30,6 @@ namespace NeatFish.Program
                 brain = new NeuralNet(2, 3, NodeIDGenerator);
             }
 
-            brain.GenerateNetwork();
-
             Brains.Add(brain);
 
             return brain;

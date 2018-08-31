@@ -10,7 +10,11 @@ namespace NeatFish.Simulation.NEAT
 
         public readonly NodeTypes type;
 
-        public UnityEngine.Vector2 Position;
+        /// <summary>
+        /// x: layer
+        /// y: order in layer
+        /// </summary>
+        public UnityEngine.Vector2Int Position;
 
         protected double Value;
 
@@ -61,11 +65,14 @@ namespace NeatFish.Simulation.NEAT
                     c.Output.AddValue(Value * c.Weight + c.Bias);
                 }
             }
+
+            PreviousValue = Value;
+            Value = 0;
         }
 
         public double GetValue()
         {
-            return Value;
+            return PreviousValue;
         }
 
         public uint Id
@@ -105,6 +112,25 @@ namespace NeatFish.Simulation.NEAT
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Used to sort nodes to layers and order in layers
+        /// </summary>
+        public class NodeSorter : IComparer<Node>
+        {
+            int IComparer<Node>.Compare(Node x, Node y)
+            {
+                if ( x.Position.x == y.Position.x ) {
+                    if (x.Position.y == y.Position.y) {
+                        throw new System.Exception("The nodes are at the same place");
+                    }
+
+                    return x.Position.y.CompareTo(y.Position.y);
+                }
+
+                return x.Position.x.CompareTo(y.Position.x);
+            }
         }
     }
 }

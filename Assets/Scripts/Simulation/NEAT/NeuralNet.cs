@@ -19,8 +19,6 @@ namespace NeatFish.Simulation.NEAT
         public List<Node> Neurons { get; protected set; }
         public List<Connection> Connections { get; protected set; }
 
-        protected List<Node> Network;
-
         protected NodeIDGenerator generator;
         protected readonly IRandomSource _rng = RandomDefaults.CreateRandomSource();
 
@@ -37,7 +35,7 @@ namespace NeatFish.Simulation.NEAT
 
             for (int i = 0; i < Inputs; i++) {
                 var node = new Node(generator.Next, Node.NodeTypes.Input) {
-                    Position = new Vector2(0, i),
+                    Position = new Vector2Int(0, i),
                 };
 
                 Neurons.Add(node);
@@ -45,11 +43,13 @@ namespace NeatFish.Simulation.NEAT
 
             for (int i = 0; i < Outputs; i++) {
                 var node = new Node(generator.Next, Node.NodeTypes.Output) {
-                    Position = new Vector2(int.MaxValue, i),
+                    Position = new Vector2Int(int.MaxValue, i),
                 };
 
                 Neurons.Add(node);
             }
+
+            InitializeConnections();
         }
 
         public NeuralNet(NeuralNet parent)
@@ -105,11 +105,13 @@ namespace NeatFish.Simulation.NEAT
                 throw new System.IndexOutOfRangeException("Input length invalid, should be: " + Inputs.ToString());
             }
 
-            for(int i = 0; i < Inputs; i++) {
+            Neurons.Sort(new Node.NodeSorter());
+
+            for (int i = 0; i < Inputs; i++) {
                 Neurons[i].AddValue(inputs[i]);
             }
 
-            foreach(Node n in Network) {
+            foreach(Node n in Neurons) {
                 n.Fire();
             }
 
@@ -122,47 +124,73 @@ namespace NeatFish.Simulation.NEAT
             return output;
         }
 
-        public void GenerateNetwork()
-        {
-            InitializeConnections();
-
-            Network = new List<Node>();
-
-            for (int l = 0; l < Layers; l++) {
-                foreach(Node n in Neurons) {
-                    if ( n.Position.x == l ) {
-                        Network.Add(n);
-                    }
-                }
-            }
-        }
-
+        /// <summary>
+        /// Sets up the initial connections for a brand new Net
+        /// </summary>
         protected void InitializeConnections()
         {
             ConnectionTemplate[] conTmpl = new ConnectionTemplate[ Inputs * Outputs ];
 
+            // create templates for all possible connections
             for (int i = 0, c = 0; i < Inputs; i++) {
                 for (int o = 0; o < Outputs; o++) {
                     conTmpl[c++] = new ConnectionTemplate(generator.Next, i, o);
                 }
             }
- 
+            
+            // mix them up
             SortUtils.Shuffle(conTmpl, _rng);
 
-            int connectionCount = (int)NumericsUtils.ProbabilisticRound(conTmpl.Length * 0.05, _rng);
-            connectionCount = System.Math.Max(1, connectionCount);
+            // make up a number between the max possible connections and zero
+            int connectionCount = (int)NumericsUtils.ProbabilisticRound(conTmpl.Length * 0.075, _rng);
+            connectionCount     = System.Math.Max(2, connectionCount);
 
+            // create that many actual connections
             for(int i = 0; i < connectionCount; i++) {
 
                 Node input  = Neurons[ i ];
-                Node output = Neurons[ i + (int)Inputs ];
+                Node output = Neurons[ i + Inputs ];
 
-                Connection con = new Connection(_rng.NextUInt(), input, output, _rng.NextDouble() * 2.0 - 1.0, _rng.NextDouble() * - 5.0);
+                Connection con = new Connection(_rng.NextUInt(), input, output, _rng.NextDouble() * 2.0 - 1.0, _rng.NextDouble() * -5.0) {
+                    Enabled = true
+                };
 
                 Connections.Add(con);
             }
         }
 
+        /// <summary>
+        /// returns whether the network is fully connected or not
+        /// </summary>
+        /// <returns></returns>
+        protected bool IsFullyConnected()
+        {
+            int maxConnections = 0;
+            int[] nodelsInLayers = new int[Layers];
+
+            for(int i = 0; i < Neurons.Count; i++) {
+                nodelsInLayers[Neurons[i].Position.x]++;
+            }
+
+            //for each layer the maximum amount of connections is the number in this layer * the number of nodes infront of it
+            //so lets add the max for each layer together and then we will get the maximum amount of connections in the network
+            for (int i = 0; i < Layers - 1; i++) {
+                int nodesInFront = 0;
+                //for each layer infront of this layer
+                for (int j = i + 1; j < Layers; j++) {
+                    //add up nodes
+                    nodesInFront += nodelsInLayers[j];
+                }
+
+                maxConnections += nodelsInLayers[i] * nodesInFront;
+            }
+
+            return maxConnections == Neurons.Count;
+        }
+
+        /// <summary>
+        /// A simple struct to represent a connection before actually creating ther class
+        /// </summary>
         private struct ConnectionTemplate
         {
             public readonly uint innovationId;

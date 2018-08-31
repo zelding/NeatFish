@@ -5,6 +5,8 @@ namespace NeatFish.Entities
 {
     public class EntityManager : MonoBehaviour
     {
+        public double Speed = 0.0;
+
         protected NeuralNet brain;
 
         protected Movement Legs;
@@ -37,9 +39,13 @@ namespace NeatFish.Entities
         private void FixedUpdate()
         {
             if (Legs != null && brain != null) {
-                double[] output = brain.Activate(new double[] { 1, 2 });
+                Vector2 asd = Random.insideUnitCircle * Random.Range(-2, 2);
 
-                Legs.Move(new Vector3((float)output[0], (float)output[1], (float)output[3]));
+                double[] input = new double[2] {asd .x, asd.y };
+
+                double[] output = brain.Activate(input);
+
+                Legs.Move(new Vector3((float)output[0], (float)output[1], (float)output[2]));
             }
             else {
                 //Debug.Log("Nolegs");

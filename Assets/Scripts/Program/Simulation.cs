@@ -13,8 +13,10 @@ public class Simulation : MonoBehaviour {
     public GameObject FisheContainer;
     public GameObject FishPrototype;
 
+    public GameObject Inspector;
+
     [Range(1, 250)]
-    public uint InitialPopulation = 10;
+    public uint InitialPopulation = 1;
 
     public Vector3 SpawnBoundaryCenter { get { return spawnBoundaryCenter; } }
     public float SpawnBoundaryRaduis { get { return spawnBoundaryRaduis; } }
@@ -23,6 +25,8 @@ public class Simulation : MonoBehaviour {
     protected float spawnBoundaryRaduis;
 
     protected List<EntityManager> fishManagers;
+
+    protected Inspector inspector;
 
     private NodeIDGenerator nodeIDGenerator;
     private SimulationManager manager;
@@ -33,6 +37,8 @@ public class Simulation : MonoBehaviour {
             throw new System.Exception("No fishcontainer was assigned");
         }
 
+        inspector = Inspector.GetComponent<Inspector>();
+        inspector.enabled = false;
     }
 
     // Use this for initialization
@@ -53,6 +59,8 @@ public class Simulation : MonoBehaviour {
 
         manager.IsRunning = true;
 
+        inspector.Brain = fishManagers[0].Brain;
+        inspector.enabled = true;
     }
 
     // Update is called once per frame
